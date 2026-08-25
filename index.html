@@ -18,208 +18,243 @@
             border-radius: 3px;
         }
         .item-card {
-            transition: all 0.2s ease-in-out;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .item-card:hover {
             transform: translateY(-2px);
         }
+        .progress-bar-glow {
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none">
 
-    <header class="bg-gradient-to-r from-red-900 via-red-700 to-red-900 border-b border-red-600/30 sticky top-0 z-50 shadow-lg">
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-red-950 via-red-800 to-red-950 border-b border-red-600/30 sticky top-0 z-50 shadow-xl backdrop-blur-md">
         <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="flex items-center space-x-3">
-                    <span class="bg-red-600 text-white font-black px-3 py-1 rounded text-2xl tracking-tighter uppercase shadow">MCU</span>
+                    <span class="bg-red-600 text-white font-black px-3 py-1 rounded text-2xl tracking-tighter uppercase shadow-lg border border-red-400/40">MCU</span>
                     <div>
                         <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white leading-tight">Universe Tracker</h1>
-                        <p class="text-xs text-red-200">Movies, Disney+ Series & Specials</p>
+                        <p class="text-xs text-red-200/80">Interactive Multiverse & Mainline Checklist</p>
                     </div>
                 </div>
                 
-                <div class="flex items-center space-x-4 bg-slate-900/80 p-2.5 rounded-lg border border-red-500/20 backdrop-blur-sm min-w-[280px]">
+                <!-- Main Dynamic Progress Bar -->
+                <div class="flex items-center space-x-4 bg-slate-900/90 p-3 rounded-xl border border-red-500/30 shadow-inner min-w-[300px]">
                     <div class="flex-1">
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-slate-300">Total Completion</span>
-                            <span id="progress-percentage" class="text-red-400">0%</span>
+                        <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+                            <span id="progress-scope-label" class="text-slate-300">Completion</span>
+                            <span id="progress-percentage" class="text-red-400 font-mono font-bold text-sm">0%</span>
                         </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                            <div id="progress-bar-fill" class="bg-gradient-to-r from-red-600 to-amber-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden p-0.5 border border-slate-700">
+                            <div id="progress-bar-fill" class="bg-gradient-to-r from-red-600 via-amber-500 to-emerald-400 h-2 rounded-full transition-all duration-500 ease-out progress-bar-glow" style="width: 0%"></div>
                         </div>
                     </div>
-                    <span id="progress-count" class="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded text-slate-300 border border-slate-700">0/0</span>
+                    <div class="flex flex-col items-end">
+                        <span id="progress-count" class="text-xs font-mono font-bold bg-slate-800 px-2.5 py-1 rounded text-amber-300 border border-slate-700 shadow-sm">0/0</span>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
+    <!-- Main Content Container -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
 
-        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-md space-y-4">
+        <!-- Controls & Filter Dashboard -->
+        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 shadow-lg space-y-4">
             
-            <div class="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
-                <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700">
-                    <button id="btn-release" onclick="setSortMode('release')" class="flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors bg-red-600 text-white shadow">
+            <!-- Requirement Scope Tabs (Requested feature) -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center border-b border-slate-800 pb-3">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-filter text-red-500 text-sm"></i>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Content Scope:</span>
+                </div>
+                
+                <div class="grid grid-cols-3 sm:flex gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button id="scope-btn-required" onclick="setRequirementFilter('required')" class="px-3.5 py-1.5 rounded-md text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow">
+                        <i class="fa-solid fa-star text-amber-400 mr-1.5"></i> Required MCU Only
+                    </button>
+                    <button id="scope-btn-all" onclick="setRequirementFilter('all')" class="px-3.5 py-1.5 rounded-md text-xs font-medium transition-all text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-globe mr-1.5"></i> All Releases
+                    </button>
+                    <button id="scope-btn-optional" onclick="setRequirementFilter('optional')" class="px-3.5 py-1.5 rounded-md text-xs font-medium transition-all text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-puzzle-piece mr-1.5"></i> Side Stories & Shorts
+                    </button>
+                </div>
+            </div>
+
+            <!-- Format & Sorting Toolbar -->
+            <div class="flex flex-col md:flex-row gap-3 justify-between items-stretch md:items-center">
+                <!-- Sorting Order -->
+                <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button id="btn-release" onclick="setSortMode('release')" class="flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors bg-red-600 text-white shadow">
                         <i class="fa-solid fa-film mr-1.5"></i> Release Order
                     </button>
-                    <button id="btn-chrono" onclick="setSortMode('chrono')" class="flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors text-slate-400 hover:text-white">
+                    <button id="btn-chrono" onclick="setSortMode('chrono')" class="flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors text-slate-400 hover:text-white">
                         <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> Timeline Order
                     </button>
                 </div>
 
-                <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700 text-xs font-medium">
-                    <button id="filter-type-all" onclick="setTypeFilter('all')" class="px-3 py-1.5 rounded-md bg-slate-700 text-white">All</button>
-                    <button id="filter-type-movie" onclick="setTypeFilter('movie')" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-white">Movies</button>
-                    <button id="filter-type-show" onclick="setTypeFilter('show')" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-white">Shows & Specials</button>
+                <!-- Format Filter -->
+                <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-medium">
+                    <button id="filter-type-all" onclick="setTypeFilter('all')" class="flex-1 px-3 py-1.5 rounded-md bg-slate-800 text-white">All Formats</button>
+                    <button id="filter-type-movie" onclick="setTypeFilter('movie')" class="flex-1 px-3 py-1.5 rounded-md text-slate-400 hover:text-white">Movies</button>
+                    <button id="filter-type-show" onclick="setTypeFilter('show')" class="flex-1 px-3 py-1.5 rounded-md text-slate-400 hover:text-white">Series & Specials</button>
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800">
+            <!-- Search, Unwatched & Reset Row -->
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80">
                 <div class="relative flex-1 min-w-[200px]">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
-                    <input type="text" id="search-input" oninput="renderApp()" placeholder="Search titles..." 
-                           class="w-full bg-slate-800 text-slate-200 placeholder-slate-400 text-xs sm:text-sm rounded-lg pl-8 pr-3 py-1.5 border border-slate-700 focus:outline-none focus:border-red-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <input type="text" id="search-input" oninput="renderApp()" placeholder="Search titles (e.g., Avengers, Loki)..." 
+                           class="w-full bg-slate-950 text-slate-200 placeholder-slate-500 text-xs sm:text-sm rounded-lg pl-8 pr-3 py-1.5 border border-slate-800 focus:outline-none focus:border-red-500 transition">
                 </div>
 
-                <button id="btn-filter-unwatched" onclick="toggleFilterUnwatched()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium border border-slate-700 transition flex items-center">
-                    <i class="fa-solid fa-eye-slash mr-1.5 text-slate-400"></i> Unwatched
+                <button id="btn-filter-unwatched" onclick="toggleFilterUnwatched()" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 rounded-lg text-xs font-medium border border-slate-800 transition flex items-center">
+                    <i class="fa-solid fa-eye-slash mr-1.5 text-slate-400"></i> Hide Watched
                 </button>
 
-                <div class="px-2.5 py-1 bg-slate-800 rounded-lg text-xs text-emerald-400 border border-slate-700 flex items-center space-x-1.5">
-                    <i class="fa-solid fa-hard-drive text-emerald-400"></i>
-                    <span>Local Storage Active</span>
-                </div>
-
-                <button onclick="resetProgress()" class="px-3 py-1.5 bg-slate-800 hover:bg-red-950/50 text-slate-400 hover:text-red-400 rounded-lg text-xs font-medium border border-slate-700 hover:border-red-800/50 transition flex items-center ml-auto" title="Reset all progress">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> Reset
+                <button onclick="resetProgress()" class="px-3 py-1.5 bg-slate-950 hover:bg-red-950/60 text-slate-400 hover:text-red-300 rounded-lg text-xs font-medium border border-slate-800 hover:border-red-800/50 transition flex items-center ml-auto" title="Reset all progress">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> Reset Checkmarks
                 </button>
             </div>
         </div>
 
+        <!-- Dynamic List Container -->
         <div id="movies-container" class="space-y-8">
-            </div>
+            <!-- Dynamic Sections Rendered Here -->
+        </div>
 
     </main>
 
-    <footer class="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 mt-auto">
         <div class="max-w-6xl mx-auto px-4 space-y-2">
-            <p>Marvel Cinematic Universe Checklist &bull; Includes Movies, Disney+ Shows & Specials up to Doomsday & Secret Wars.</p>
-            <p class="text-slate-600">Saved zero-network energy via browser <code class="text-slate-400">localStorage</code>.</p>
+            <p>Marvel Cinematic Universe Checklist &bull; Categorized by Core Mainline Required MCU vs Optional Series.</p>
+            <p class="text-slate-600">Saved automatically in browser local storage.</p>
         </div>
     </footer>
 
     <script>
-        const STORAGE_KEY = 'mcu_checklist_progress';
+        const STORAGE_KEY = 'mcu_checklist_progress_v2';
 
-        // MCU Dataset through Phase 6
+        // MCU Dataset with 'essential' property defining required mainline canon vs side stories/animations
         const mcuItems = [
-            // Phase 1
-            { id: "m1", title: "Iron Man", year: 2008, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 1, chronoOrder: 3, icon: "fa-mask" },
-            { id: "m2", title: "The Incredible Hulk", year: 2008, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 2, chronoOrder: 5, icon: "fa-radiation" },
-            { id: "m3", title: "Iron Man 2", year: 2010, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 3, chronoOrder: 4, icon: "fa-bolt" },
-            { id: "m4", title: "Thor", year: 2011, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 4, chronoOrder: 6, icon: "fa-hammer" },
-            { id: "m5", title: "Captain America: The First Avenger", year: 2011, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 5, chronoOrder: 1, icon: "fa-shield-halved" },
-            { id: "m6", title: "The Avengers", year: 2012, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 6, chronoOrder: 7, icon: "fa-user-group" },
+            // Phase 1 (Infinity Saga - All Mainline Required)
+            { id: "m1", title: "Iron Man", year: 2008, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 1, chronoOrder: 3, icon: "fa-mask", essential: true },
+            { id: "m2", title: "The Incredible Hulk", year: 2008, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 2, chronoOrder: 5, icon: "fa-radiation", essential: true },
+            { id: "m3", title: "Iron Man 2", year: 2010, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 3, chronoOrder: 4, icon: "fa-bolt", essential: true },
+            { id: "m4", title: "Thor", year: 2011, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 4, chronoOrder: 6, icon: "fa-hammer", essential: true },
+            { id: "m5", title: "Captain America: The First Avenger", year: 2011, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 5, chronoOrder: 1, icon: "fa-shield-halved", essential: true },
+            { id: "m6", title: "The Avengers", year: 2012, phase: 1, saga: "The Infinity Saga", type: "movie", releaseOrder: 6, chronoOrder: 7, icon: "fa-user-group", essential: true },
 
-            // Phase 2
-            { id: "m7", title: "Iron Man 3", year: 2013, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 7, chronoOrder: 8, icon: "fa-fire" },
-            { id: "m8", title: "Thor: The Dark World", year: 2013, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 8, chronoOrder: 9, icon: "fa-gem" },
-            { id: "m9", title: "Captain America: The Winter Soldier", year: 2014, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 9, chronoOrder: 10, icon: "fa-person-military-rifle" },
-            { id: "m10", title: "Guardians of the Galaxy", year: 2014, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 10, chronoOrder: 11, icon: "fa-rocket" },
-            { id: "m12", title: "Avengers: Age of Ultron", year: 2015, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 11, chronoOrder: 13, icon: "fa-robot" },
-            { id: "m13", title: "Ant-Man", year: 2015, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 12, chronoOrder: 14, icon: "fa-bug" },
+            // Phase 2 (Infinity Saga - All Mainline Required)
+            { id: "m7", title: "Iron Man 3", year: 2013, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 7, chronoOrder: 8, icon: "fa-fire", essential: true },
+            { id: "m8", title: "Thor: The Dark World", year: 2013, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 8, chronoOrder: 9, icon: "fa-gem", essential: true },
+            { id: "m9", title: "Captain America: The Winter Soldier", year: 2014, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 9, chronoOrder: 10, icon: "fa-person-military-rifle", essential: true },
+            { id: "m10", title: "Guardians of the Galaxy", year: 2014, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 10, chronoOrder: 11, icon: "fa-rocket", essential: true },
+            { id: "m12", title: "Avengers: Age of Ultron", year: 2015, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 11, chronoOrder: 13, icon: "fa-robot", essential: true },
+            { id: "m13", title: "Ant-Man", year: 2015, phase: 2, saga: "The Infinity Saga", type: "movie", releaseOrder: 12, chronoOrder: 14, icon: "fa-bug", essential: true },
 
-            // Phase 3
-            { id: "m14", title: "Captain America: Civil War", year: 2016, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 13, chronoOrder: 15, icon: "fa-hand-fist" },
-            { id: "m18", title: "Doctor Strange", year: 2016, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 14, chronoOrder: 19, icon: "fa-hat-wizard" },
-            { id: "m11", title: "Guardians of the Galaxy Vol. 2", year: 2017, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 15, chronoOrder: 12, icon: "fa-compact-disc" },
-            { id: "m17", title: "Spider-Man: Homecoming", year: 2017, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 16, chronoOrder: 18, icon: "fa-spider" },
-            { id: "m19", title: "Thor: Ragnarok", year: 2017, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 17, chronoOrder: 20, icon: "fa-skull" },
-            { id: "m16", title: "Black Panther", year: 2018, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 18, chronoOrder: 17, icon: "fa-cat" },
-            { id: "m22", title: "Avengers: Infinity War", year: 2018, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 19, chronoOrder: 22, icon: "fa-ring" },
-            { id: "m20", title: "Ant-Man and the Wasp", year: 2018, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 20, chronoOrder: 21, icon: "fa-atom" },
-            { id: "m21", title: "Captain Marvel", year: 2019, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 21, chronoOrder: 2, icon: "fa-star" },
-            { id: "m23", title: "Avengers: Endgame", year: 2019, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 22, chronoOrder: 23, icon: "fa-hourglass-end" },
-            { id: "m24", title: "Spider-Man: Far From Home", year: 2019, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 23, chronoOrder: 24, icon: "fa-plane" },
+            // Phase 3 (Infinity Saga - All Mainline Required)
+            { id: "m14", title: "Captain America: Civil War", year: 2016, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 13, chronoOrder: 15, icon: "fa-hand-fist", essential: true },
+            { id: "m18", title: "Doctor Strange", year: 2016, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 14, chronoOrder: 19, icon: "fa-hat-wizard", essential: true },
+            { id: "m11", title: "Guardians of the Galaxy Vol. 2", year: 2017, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 15, chronoOrder: 12, icon: "fa-compact-disc", essential: true },
+            { id: "m17", title: "Spider-Man: Homecoming", year: 2017, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 16, chronoOrder: 18, icon: "fa-spider", essential: true },
+            { id: "m19", title: "Thor: Ragnarok", year: 2017, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 17, chronoOrder: 20, icon: "fa-skull", essential: true },
+            { id: "m16", title: "Black Panther", year: 2018, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 18, chronoOrder: 17, icon: "fa-cat", essential: true },
+            { id: "m22", title: "Avengers: Infinity War", year: 2018, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 19, chronoOrder: 22, icon: "fa-ring", essential: true },
+            { id: "m20", title: "Ant-Man and the Wasp", year: 2018, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 20, chronoOrder: 21, icon: "fa-atom", essential: true },
+            { id: "m21", title: "Captain Marvel", year: 2019, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 21, chronoOrder: 2, icon: "fa-star", essential: true },
+            { id: "m23", title: "Avengers: Endgame", year: 2019, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 22, chronoOrder: 23, icon: "fa-hourglass-end", essential: true },
+            { id: "m24", title: "Spider-Man: Far From Home", year: 2019, phase: 3, saga: "The Infinity Saga", type: "movie", releaseOrder: 23, chronoOrder: 24, icon: "fa-plane", essential: true },
 
-            // Phase 4
-            { id: "s1", title: "WandaVision", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 24, chronoOrder: 25, icon: "fa-tv" },
-            { id: "s2", title: "The Falcon and the Winter Soldier", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 25, chronoOrder: 26, icon: "fa-feather" },
-            { id: "m15", title: "Black Widow", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 26, chronoOrder: 16, icon: "fa-spider" },
-            { id: "s3", title: "Loki (Season 1)", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 27, chronoOrder: 27, icon: "fa-clock" },
-            { id: "s4", title: "What If...? (Season 1)", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 28, chronoOrder: 28, icon: "fa-shuffle" },
-            { id: "m25", title: "Shang-Chi and the Legend of the Ten Rings", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 29, chronoOrder: 29, icon: "fa-ring" },
-            { id: "m26", title: "Eternals", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 30, chronoOrder: 30, icon: "fa-sun" },
-            { id: "s5", title: "Hawkeye", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 31, chronoOrder: 31, icon: "fa-bullseye" },
-            { id: "m27", title: "Spider-Man: No Way Home", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 32, chronoOrder: 32, icon: "fa-code-branch" },
-            { id: "s6", title: "Moon Knight", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 33, chronoOrder: 33, icon: "fa-moon" },
-            { id: "m28", title: "Doctor Strange in the Multiverse of Madness", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 34, chronoOrder: 34, icon: "fa-eye" },
-            { id: "s7", title: "Ms. Marvel", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 35, chronoOrder: 35, icon: "fa-bolt" },
-            { id: "m29", title: "Thor: Love and Thunder", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 36, chronoOrder: 36, icon: "fa-heart" },
-            { id: "s8", title: "I Am Groot (Season 1)", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 37, chronoOrder: 37, icon: "fa-tree" },
-            { id: "s9", title: "She-Hulk: Attorney at Law", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 38, chronoOrder: 38, icon: "fa-scale-balanced" },
-            { id: "s10", title: "Werewolf by Night", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 39, chronoOrder: 39, icon: "fa-paw" },
-            { id: "m30", title: "Black Panther: Wakanda Forever", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 40, chronoOrder: 40, icon: "fa-crown" },
-            { id: "s11", title: "The Guardians of the Galaxy Holiday Special", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 41, chronoOrder: 41, icon: "fa-gift" },
+            // Phase 4 (Multiverse Saga)
+            { id: "s1", title: "WandaVision", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 24, chronoOrder: 25, icon: "fa-tv", essential: true },
+            { id: "s2", title: "The Falcon and the Winter Soldier", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 25, chronoOrder: 26, icon: "fa-feather", essential: true },
+            { id: "m15", title: "Black Widow", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 26, chronoOrder: 16, icon: "fa-spider", essential: true },
+            { id: "s3", title: "Loki (Season 1)", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 27, chronoOrder: 27, icon: "fa-clock", essential: true },
+            { id: "s4", title: "What If...? (Season 1)", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 28, chronoOrder: 28, icon: "fa-shuffle", essential: false },
+            { id: "m25", title: "Shang-Chi and the Legend of the Ten Rings", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 29, chronoOrder: 29, icon: "fa-ring", essential: true },
+            { id: "m26", title: "Eternals", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 30, chronoOrder: 30, icon: "fa-sun", essential: true },
+            { id: "s5", title: "Hawkeye", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 31, chronoOrder: 31, icon: "fa-bullseye", essential: true },
+            { id: "m27", title: "Spider-Man: No Way Home", year: 2021, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 32, chronoOrder: 32, icon: "fa-code-branch", essential: true },
+            { id: "s6", title: "Moon Knight", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 33, chronoOrder: 33, icon: "fa-moon", essential: false },
+            { id: "m28", title: "Doctor Strange in the Multiverse of Madness", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 34, chronoOrder: 34, icon: "fa-eye", essential: true },
+            { id: "s7", title: "Ms. Marvel", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 35, chronoOrder: 35, icon: "fa-bolt", essential: true },
+            { id: "m29", title: "Thor: Love and Thunder", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 36, chronoOrder: 36, icon: "fa-heart", essential: true },
+            { id: "s8", title: "I Am Groot (Season 1)", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 37, chronoOrder: 37, icon: "fa-tree", essential: false },
+            { id: "s9", title: "She-Hulk: Attorney at Law", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 38, chronoOrder: 38, icon: "fa-scale-balanced", essential: false },
+            { id: "s10", title: "Werewolf by Night", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 39, chronoOrder: 39, icon: "fa-paw", essential: false },
+            { id: "m30", title: "Black Panther: Wakanda Forever", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "movie", releaseOrder: 40, chronoOrder: 40, icon: "fa-crown", essential: true },
+            { id: "s11", title: "The Guardians of the Galaxy Holiday Special", year: 2022, phase: 4, saga: "The Multiverse Saga", type: "show", releaseOrder: 41, chronoOrder: 41, icon: "fa-gift", essential: false },
 
-            // Phase 5
-            { id: "m31", title: "Ant-Man and the Wasp: Quantumania", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 42, chronoOrder: 42, icon: "fa-dna" },
-            { id: "m32", title: "Guardians of the Galaxy Vol. 3", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 43, chronoOrder: 43, icon: "fa-paw" },
-            { id: "s12", title: "Secret Invasion", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 44, chronoOrder: 44, icon: "fa-user-secret" },
-            { id: "s13", title: "I Am Groot (Season 2)", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 45, chronoOrder: 45, icon: "fa-tree" },
-            { id: "s14", title: "Loki (Season 2)", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 46, chronoOrder: 46, icon: "fa-clock" },
-            { id: "m33", title: "The Marvels", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 47, chronoOrder: 47, icon: "fa-burst" },
-            { id: "s15", title: "What If...? (Season 2)", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 48, chronoOrder: 48, icon: "fa-shuffle" },
-            { id: "s16", title: "Echo", year: 2024, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 49, chronoOrder: 49, icon: "fa-hand" },
-            { id: "m34", title: "Deadpool & Wolverine", year: 2024, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 50, chronoOrder: 50, icon: "fa-crosshairs" },
-            { id: "s17", title: "Agatha All Along", year: 2024, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 51, chronoOrder: 51, icon: "fa-broom" },
-            { id: "s18", title: "What If...? (Season 3)", year: 2024, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 52, chronoOrder: 52, icon: "fa-shuffle" },
-            { id: "s19", title: "Your Friendly Neighborhood Spider-Man", year: 2025, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 53, chronoOrder: 53, icon: "fa-spider" },
-            { id: "m35", title: "Captain America: Brave New World", year: 2025, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 54, chronoOrder: 54, icon: "fa-eagle" },
-            { id: "s20", title: "Daredevil: Born Again", year: 2025, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 55, chronoOrder: 55, icon: "fa-mask-snake" },
-            { id: "m36", title: "Thunderbolts*", year: 2025, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 56, chronoOrder: 56, icon: "fa-user-ninja" },
+            // Phase 5 (Multiverse Saga)
+            { id: "m31", title: "Ant-Man and the Wasp: Quantumania", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 42, chronoOrder: 42, icon: "fa-dna", essential: true },
+            { id: "m32", title: "Guardians of the Galaxy Vol. 3", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 43, chronoOrder: 43, icon: "fa-paw", essential: true },
+            { id: "s12", title: "Secret Invasion", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 44, chronoOrder: 44, icon: "fa-user-secret", essential: true },
+            { id: "s13", title: "I Am Groot (Season 2)", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 45, chronoOrder: 45, icon: "fa-tree", essential: false },
+            { id: "s14", title: "Loki (Season 2)", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 46, chronoOrder: 46, icon: "fa-clock", essential: true },
+            { id: "m33", title: "The Marvels", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 47, chronoOrder: 47, icon: "fa-burst", essential: true },
+            { id: "s15", title: "What If...? (Season 2)", year: 2023, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 48, chronoOrder: 48, icon: "fa-shuffle", essential: false },
+            { id: "s16", title: "Echo", year: 2024, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 49, chronoOrder: 49, icon: "fa-hand", essential: false },
+            { id: "m34", title: "Deadpool & Wolverine", year: 2024, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 50, chronoOrder: 50, icon: "fa-crosshairs", essential: true },
+            { id: "s17", title: "Agatha All Along", year: 2024, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 51, chronoOrder: 51, icon: "fa-broom", essential: true },
+            { id: "s18", title: "What If...? (Season 3)", year: 2024, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 52, chronoOrder: 52, icon: "fa-shuffle", essential: false },
+            { id: "s19", title: "Your Friendly Neighborhood Spider-Man", year: 2025, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 53, chronoOrder: 53, icon: "fa-spider", essential: false },
+            { id: "m35", title: "Captain America: Brave New World", year: 2025, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 54, chronoOrder: 54, icon: "fa-eagle", essential: true },
+            { id: "s20", title: "Daredevil: Born Again", year: 2025, phase: 5, saga: "The Multiverse Saga", type: "show", releaseOrder: 55, chronoOrder: 55, icon: "fa-mask-snake", essential: true },
+            { id: "m36", title: "Thunderbolts*", year: 2025, phase: 5, saga: "The Multiverse Saga", type: "movie", releaseOrder: 56, chronoOrder: 56, icon: "fa-user-ninja", essential: true },
 
-            // Phase 6 - Up to Doomsday & Secret Wars
-            { id: "s21", title: "Ironheart", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 57, chronoOrder: 57, icon: "fa-heart-pulse" },
-            { id: "m37", title: "The Fantastic Four: First Steps", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "movie", releaseOrder: 58, chronoOrder: 58, icon: "fa-4" },
-            { id: "s22", title: "Eyes of Wakanda", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 59, chronoOrder: 59, icon: "fa-shield-cat" },
-            { id: "s23", title: "Marvel Zombies", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 60, chronoOrder: 61, icon: "fa-biohazard" },
-            { id: "s24", title: "Wonder Man", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 61, chronoOrder: 60, icon: "fa-clapperboard" },
-            { id: "s25", title: "Vision Quest", year: 2026, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 62, chronoOrder: 62, icon: "fa-gem" },
-            { id: "m38", title: "Spider-Man: Brand New Day", year: 2026, phase: 6, saga: "The Multiverse Saga", type: "movie", releaseOrder: 63, chronoOrder: 63, icon: "fa-spider" },
-            { id: "m39", title: "Avengers: Doomsday", year: 2026, phase: 6, saga: "The Multiverse Saga", type: "movie", releaseOrder: 64, chronoOrder: 64, icon: "fa-skull-crossbones" },
-            { id: "m40", title: "Avengers: Secret Wars", year: 2027, phase: 6, saga: "The Multiverse Saga", type: "movie", releaseOrder: 65, chronoOrder: 65, icon: "fa-globe" }
+            // Phase 6 (Multiverse Saga)
+            { id: "s21", title: "Ironheart", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 57, chronoOrder: 57, icon: "fa-heart-pulse", essential: true },
+            { id: "m37", title: "The Fantastic Four: First Steps", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "movie", releaseOrder: 58, chronoOrder: 58, icon: "fa-4", essential: true },
+            { id: "s22", title: "Eyes of Wakanda", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 59, chronoOrder: 59, icon: "fa-shield-cat", essential: false },
+            { id: "s23", title: "Marvel Zombies", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 60, chronoOrder: 61, icon: "fa-biohazard", essential: false },
+            { id: "s24", title: "Wonder Man", year: 2025, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 61, chronoOrder: 60, icon: "fa-clapperboard", essential: false },
+            { id: "s25", title: "Vision Quest", year: 2026, phase: 6, saga: "The Multiverse Saga", type: "show", releaseOrder: 62, chronoOrder: 62, icon: "fa-gem", essential: true },
+            { id: "m38", title: "Spider-Man: Brand New Day", year: 2026, phase: 6, saga: "The Multiverse Saga", type: "movie", releaseOrder: 63, chronoOrder: 63, icon: "fa-spider", essential: true },
+            { id: "m39", title: "Avengers: Doomsday", year: 2026, phase: 6, saga: "The Multiverse Saga", type: "movie", releaseOrder: 64, chronoOrder: 64, icon: "fa-skull-crossbones", essential: true },
+            { id: "m40", title: "Avengers: Secret Wars", year: 2027, phase: 6, saga: "The Multiverse Saga", type: "movie", releaseOrder: 65, chronoOrder: 65, icon: "fa-globe", essential: true }
         ];
 
-        // State Management
+        // Application State
         let watchedMovies = new Set();
         let sortMode = 'release';
         let typeFilter = 'all';
+        let requirementFilter = 'required'; // Default to "Required MCU Only" as requested!
         let filterUnwatchedOnly = false;
 
-        // Load progress from localStorage
+        // Load progress safely from LocalStorage
         function loadProgress() {
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
-                    watchedMovies = new Set(JSON.parse(saved));
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) {
+                        watchedMovies = new Set(parsed);
+                    }
                 }
             } catch (e) {
-                console.error("Error reading localStorage:", e);
+                console.warn("LocalStorage access unavailable, operating in session mode:", e);
             }
         }
 
-        // Save progress to localStorage
+        // Save progress safely
         function saveProgress() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(watchedMovies)));
             } catch (e) {
-                console.error("Error writing to localStorage:", e);
+                console.warn("Unable to write to LocalStorage:", e);
             }
         }
 
-        // Toggle single item
+        // Toggle Single Movie Checkbox
         window.toggleMovie = function(id) {
             if (watchedMovies.has(id)) {
                 watchedMovies.delete(id);
@@ -230,16 +265,25 @@
             renderApp();
         };
 
-        // Toggle entire Phase
+        // Toggle Phase Completion
         window.togglePhase = function(phaseNum) {
-            const phaseItemIds = mcuItems.filter(m => m.phase === phaseNum).map(m => m.id);
-            const allWatched = phaseItemIds.every(id => watchedMovies.has(id));
+            // Get currently visible/applicable items in this phase according to active requirement filter
+            const phaseItems = mcuItems.filter(m => {
+                const matchesPhase = m.phase === phaseNum;
+                const matchesReq = requirementFilter === 'all' ? true : (requirementFilter === 'required' ? m.essential : !m.essential);
+                const matchesType = typeFilter === 'all' ? true : m.type === typeFilter;
+                return matchesPhase && matchesReq && matchesType;
+            });
 
-            phaseItemIds.forEach(id => {
+            if (phaseItems.length === 0) return;
+
+            const allWatched = phaseItems.every(item => watchedMovies.has(item.id));
+
+            phaseItems.forEach(item => {
                 if (allWatched) {
-                    watchedMovies.delete(id);
+                    watchedMovies.delete(item.id);
                 } else {
-                    watchedMovies.add(id);
+                    watchedMovies.add(item.id);
                 }
             });
 
@@ -247,42 +291,68 @@
             renderApp();
         };
 
-        // Reset progress
+        // Reset All Checkmarks
         window.resetProgress = function() {
             if (watchedMovies.size === 0) return;
-            watchedMovies.clear();
-            saveProgress();
-            renderApp();
+            if (confirm("Reset all checkmarks?")) {
+                watchedMovies.clear();
+                saveProgress();
+                renderApp();
+            }
         };
 
-        // Set Sort Mode
+        // Set Sorting Mode
         window.setSortMode = function(mode) {
             sortMode = mode;
             const btnRelease = document.getElementById('btn-release');
             const btnChrono = document.getElementById('btn-chrono');
 
             if (mode === 'release') {
-                btnRelease.className = "flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors bg-red-600 text-white shadow";
-                btnChrono.className = "flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors text-slate-400 hover:text-white";
+                btnRelease.className = "flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors bg-red-600 text-white shadow";
+                btnChrono.className = "flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors text-slate-400 hover:text-white";
             } else {
-                btnChrono.className = "flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors bg-red-600 text-white shadow";
-                btnRelease.className = "flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors text-slate-400 hover:text-white";
+                btnChrono.className = "flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors bg-red-600 text-white shadow";
+                btnRelease.className = "flex-1 md:flex-initial px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors text-slate-400 hover:text-white";
             }
 
             renderApp();
         };
 
-        // Set Type Filter
+        // Set Format Filter (All, Movies, Series)
         window.setTypeFilter = function(type) {
             typeFilter = type;
             ['all', 'movie', 'show'].forEach(t => {
                 const btn = document.getElementById(`filter-type-${t}`);
                 if (t === type) {
-                    btn.className = "px-3 py-1.5 rounded-md bg-slate-700 text-white shadow-sm";
+                    btn.className = "flex-1 px-3 py-1.5 rounded-md bg-slate-800 text-white shadow-sm font-semibold";
                 } else {
-                    btn.className = "px-3 py-1.5 rounded-md text-slate-400 hover:text-white";
+                    btn.className = "flex-1 px-3 py-1.5 rounded-md text-slate-400 hover:text-white";
                 }
             });
+            renderApp();
+        };
+
+        // Set Requirement Scope Filter (Required, All, Side Stories)
+        window.setRequirementFilter = function(req) {
+            requirementFilter = req;
+            
+            const reqBtn = document.getElementById('scope-btn-required');
+            const allBtn = document.getElementById('scope-btn-all');
+            const optBtn = document.getElementById('scope-btn-optional');
+
+            // Reset styles
+            [reqBtn, allBtn, optBtn].forEach(b => {
+                b.className = "px-3.5 py-1.5 rounded-md text-xs font-medium transition-all text-slate-400 hover:text-white";
+            });
+
+            if (req === 'required') {
+                reqBtn.className = "px-3.5 py-1.5 rounded-md text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow";
+            } else if (req === 'all') {
+                allBtn.className = "px-3.5 py-1.5 rounded-md text-xs font-bold transition-all bg-red-600 text-white shadow";
+            } else {
+                optBtn.className = "px-3.5 py-1.5 rounded-md text-xs font-bold transition-all bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow";
+            }
+
             renderApp();
         };
 
@@ -293,26 +363,45 @@
             if (filterUnwatchedOnly) {
                 btn.className = "px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium border border-red-500 transition flex items-center shadow";
             } else {
-                btn.className = "px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium border border-slate-700 transition flex items-center";
+                btn.className = "px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 rounded-lg text-xs font-medium border border-slate-800 transition flex items-center";
             }
             renderApp();
         };
 
-        // Main Render Function
+        // Main App Render Function with Dynamic Progress Bar Update
         window.renderApp = function() {
             const container = document.getElementById('movies-container');
             const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
 
-            // Overall Stats
-            const totalItems = mcuItems.length;
-            const watchedCount = watchedMovies.size;
-            const percentage = Math.round((watchedCount / totalItems) * 100) || 0;
+            // 1. Calculate Progress dynamically based on the active Requirement & Format scope
+            const scopedItems = mcuItems.filter(item => {
+                const matchesType = typeFilter === 'all' ? true : item.type === typeFilter;
+                const matchesRequirement = requirementFilter === 'all' ? true : (requirementFilter === 'required' ? item.essential : !item.essential);
+                return matchesType && matchesRequirement;
+            });
+
+            const scopedTotal = scopedItems.length;
+            const scopedWatched = scopedItems.filter(item => watchedMovies.has(item.id)).length;
+            const percentage = scopedTotal > 0 ? Math.round((scopedWatched / scopedTotal) * 100) : 0;
+
+            // Update Progress UI Elements cleanly
+            const labelEl = document.getElementById('progress-scope-label');
+            if (requirementFilter === 'required') {
+                labelEl.innerText = "Required MCU Progress";
+            } else if (requirementFilter === 'optional') {
+                labelEl.innerText = "Side Stories Progress";
+            } else {
+                labelEl.innerText = "Total MCU Progress";
+            }
 
             document.getElementById('progress-percentage').innerText = `${percentage}%`;
-            document.getElementById('progress-bar-fill').style.width = `${percentage}%`;
-            document.getElementById('progress-count').innerText = `${watchedCount}/${totalItems}`;
+            document.getElementById('progress-count').innerText = `${scopedWatched}/${scopedTotal}`;
+            
+            // Force width update on progress bar
+            const barFill = document.getElementById('progress-bar-fill');
+            barFill.style.width = `${percentage}%`;
 
-            // Sort Data
+            // 2. Prepare Sorted & Filtered Items for List Display
             let sortedItems = [...mcuItems];
             if (sortMode === 'release') {
                 sortedItems.sort((a, b) => a.releaseOrder - b.releaseOrder);
@@ -320,20 +409,20 @@
                 sortedItems.sort((a, b) => a.chronoOrder - b.chronoOrder);
             }
 
-            // Apply Filters
             let filteredItems = sortedItems.filter(item => {
                 const matchesSearch = item.title.toLowerCase().includes(searchQuery);
                 const matchesUnwatched = filterUnwatchedOnly ? !watchedMovies.has(item.id) : true;
                 const matchesType = typeFilter === 'all' ? true : item.type === typeFilter;
-                return matchesSearch && matchesUnwatched && matchesType;
+                const matchesRequirement = requirementFilter === 'all' ? true : (requirementFilter === 'required' ? item.essential : !item.essential);
+                return matchesSearch && matchesUnwatched && matchesType && matchesRequirement;
             });
 
             if (filteredItems.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-12 bg-slate-900 rounded-xl border border-slate-800">
-                        <i class="fa-solid fa-film text-4xl text-slate-600 mb-3"></i>
+                    <div class="text-center py-12 bg-slate-900/90 rounded-xl border border-slate-800">
+                        <i class="fa-solid fa-film text-4xl text-slate-700 mb-3"></i>
                         <p class="text-slate-400 font-medium">No movies or shows match your current filters.</p>
-                        <p class="text-slate-600 text-xs mt-1">Try adjusting search parameters.</p>
+                        <p class="text-slate-600 text-xs mt-1">Try switching content scope to 'All Releases' or clearing your search.</p>
                     </div>
                 `;
                 return;
@@ -348,11 +437,12 @@
                     const phaseItems = filteredItems.filter(m => m.phase === phaseNum);
                     if (phaseItems.length === 0) return;
 
-                    const allPhaseItems = mcuItems.filter(m => m.phase === phaseNum);
-                    const phaseWatchedCount = allPhaseItems.filter(m => watchedMovies.has(m.id)).length;
-                    const phaseTotal = allPhaseItems.length;
+                    // Calculate phase completion status based on visible items
+                    const allPhaseScopeItems = scopedItems.filter(m => m.phase === phaseNum);
+                    const phaseWatchedCount = allPhaseScopeItems.filter(m => watchedMovies.has(m.id)).length;
+                    const phaseTotal = allPhaseScopeItems.length;
                     const isPhaseComplete = phaseWatchedCount === phaseTotal && phaseTotal > 0;
-                    const sagaName = allPhaseItems[0]?.saga || "";
+                    const sagaName = phaseItems[0]?.saga || "";
 
                     const section = document.createElement('section');
                     section.className = "bg-slate-900/80 rounded-xl border border-slate-800 overflow-hidden shadow-sm";
@@ -360,20 +450,20 @@
                     section.innerHTML = `
                         <div class="bg-slate-800/80 px-4 py-3 sm:px-6 flex flex-wrap justify-between items-center border-b border-slate-700/60 gap-2">
                             <div class="flex items-center space-x-3">
-                                <span class="text-xs font-bold uppercase tracking-wider text-red-400 bg-red-950/60 border border-red-800/40 px-2 py-0.5 rounded">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-red-400 bg-red-950/80 border border-red-800/40 px-2 py-0.5 rounded">
                                     ${sagaName}
                                 </span>
                                 <h2 class="text-lg font-bold text-white">Phase ${phaseNum}</h2>
                             </div>
                             
                             <div class="flex items-center space-x-3">
-                                <span class="text-xs font-mono text-slate-400">${phaseWatchedCount}/${phaseTotal} Completed</span>
+                                <span class="text-xs font-mono text-slate-400">${phaseWatchedCount}/${phaseTotal} Done</span>
                                 <button onclick="togglePhase(${phaseNum})" class="text-xs font-semibold px-2.5 py-1 rounded border transition ${
                                     isPhaseComplete 
-                                    ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40 hover:bg-emerald-900/50' 
-                                    : 'bg-slate-700 hover:bg-slate-600 text-slate-200 border-slate-600'
+                                    ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/50 hover:bg-emerald-900/60' 
+                                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
                                 }">
-                                    ${isPhaseComplete ? '<i class="fa-solid fa-check mr-1"></i> Phase Done' : 'Mark Phase'}
+                                    ${isPhaseComplete ? '<i class="fa-solid fa-check mr-1"></i> Phase Completed' : 'Mark Phase'}
                                 </button>
                             </div>
                         </div>
@@ -387,16 +477,16 @@
                 });
 
             } else {
-                // Timeline View
+                // In-Universe Timeline View
                 const section = document.createElement('section');
                 section.className = "bg-slate-900/80 rounded-xl border border-slate-800 overflow-hidden p-4 shadow-sm";
 
                 section.innerHTML = `
                     <div class="mb-4 pb-2 border-b border-slate-800 flex justify-between items-center">
                         <h2 class="text-lg font-bold text-white flex items-center">
-                            <i class="fa-solid fa-timeline text-red-500 mr-2"></i> MCU In-Universe Timeline
+                            <i class="fa-solid fa-timeline text-red-500 mr-2"></i> MCU Chronological Timeline
                         </h2>
-                        <span class="text-xs text-slate-400 font-mono">Chronological Order</span>
+                        <span class="text-xs text-slate-400 font-mono">In-Universe Order</span>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         ${filteredItems.map(item => createCardHTML(item, true)).join('')}
@@ -407,40 +497,43 @@
             }
         };
 
-        // Helper: Create HTML Card
+        // Helper: Generate Card HTML
         function createCardHTML(item, showChronoBadge = false) {
             const isWatched = watchedMovies.has(item.id);
-            const isShow = item.type === 'show';
 
             return `
                 <div onclick="toggleMovie('${item.id}')" 
-                     class="item-card cursor-pointer p-3.5 rounded-lg border flex items-center justify-between transition-all select-none ${
+                     class="item-card cursor-pointer p-3.5 rounded-xl border flex items-center justify-between transition-all select-none ${
                         isWatched 
-                        ? 'bg-slate-800/40 border-emerald-600/30 text-slate-400' 
-                        : 'bg-slate-800/90 border-slate-700/80 hover:border-red-500/50 text-slate-100 shadow-sm'
+                        ? 'bg-slate-900/40 border-emerald-600/30 text-slate-400' 
+                        : 'bg-slate-900 border-slate-800 hover:border-red-500/60 text-slate-100 shadow-md'
                      }">
                     
                     <div class="flex items-center space-x-3 min-w-0 pr-2">
-                        <div class="w-5 h-5 rounded flex items-center justify-center transition-colors flex-shrink-0 ${
+                        <!-- Custom Checkbox -->
+                        <div class="w-5 h-5 rounded-md flex items-center justify-center transition-colors flex-shrink-0 ${
                             isWatched 
                             ? 'bg-emerald-500 text-slate-950 font-bold' 
-                            : 'border-2 border-slate-500 bg-slate-900'
+                            : 'border-2 border-slate-600 bg-slate-950 hover:border-red-500'
                         }">
                             ${isWatched ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
                         </div>
 
                         <div class="truncate">
                             <div class="flex items-center space-x-2">
-                                <h3 class="font-semibold text-sm truncate ${isWatched ? 'line-through text-slate-400' : 'text-slate-100'}">
+                                <h3 class="font-semibold text-sm truncate ${isWatched ? 'line-through text-slate-500' : 'text-slate-100'}">
                                     ${item.title}
                                 </h3>
                             </div>
-                            <div class="flex items-center space-x-2 text-xs text-slate-400 mt-0.5">
-                                <span class="${isShow ? 'text-blue-400 font-medium' : 'text-slate-400'}">${item.type === 'show' ? 'Series' : 'Movie'}</span>
+                            
+                            <div class="flex items-center space-x-1.5 text-xs text-slate-400 mt-1 flex-wrap gap-y-1">
+                                <span class="px-1.5 py-0.2 rounded ${item.essential ? 'bg-amber-950/80 text-amber-300 border border-amber-800/40 font-medium' : 'bg-slate-800 text-slate-400'}">
+                                    ${item.essential ? 'Required' : 'Side Story'}
+                                </span>
+                                <span>&bull;</span>
+                                <span class="${item.type === 'show' ? 'text-blue-400 font-medium' : 'text-slate-400'}">${item.type === 'show' ? 'Series' : 'Movie'}</span>
                                 <span>&bull;</span>
                                 <span>${item.year}</span>
-                                <span>&bull;</span>
-                                <span>Phase ${item.phase}</span>
                                 ${showChronoBadge ? `<span>&bull;</span> <span class="text-amber-400/90 font-mono">#${item.chronoOrder}</span>` : ''}
                             </div>
                         </div>
@@ -453,13 +546,11 @@
             `;
         }
 
-        // Initialize App
+        // Initialize App on DOM Ready
         document.addEventListener('DOMContentLoaded', () => {
             loadProgress();
             renderApp();
         });
     </script>
-</body>
-</html>
 </body>
 </html>
